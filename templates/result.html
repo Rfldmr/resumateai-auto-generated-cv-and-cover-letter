@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>">
+    <title>Hasil - ResuMate.ai</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+
+    <div class="max-w-7xl mx-auto">
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="ResuMate.ai Logo" class="h-6">
+            </div>
+            <a href="/" class="text-gray-600 hover:text-blue-600 font-medium">
+                <i class="fas fa-arrow-left mr-2"></i> Buat Baru
+            </a>
+        </header>
+
+        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded shadow-sm" role="alert">
+            <p class="font-bold">Berhasil!</p>
+            <p>CV ATS dan Cover Letter Anda telah siap.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <div class="bg-white p-4 rounded-xl shadow-lg flex flex-col h-[85vh]">
+                <div class="flex justify-between items-center mb-4 border-b pb-2">
+                    <h2 class="text-xl font-bold text-gray-800">Preview CV</h2>
+                    <a href="/download/{{ pdf_url }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center shadow">
+                        <i class="fas fa-download mr-2"></i> Unduh PDF
+                    </a>
+                </div>
+                
+                <div class="flex-grow bg-gray-200 rounded-lg overflow-hidden border">
+                    <iframe src="/static/{{ pdf_url }}" width="100%" height="100%" class="border-none">
+                        Browser Anda tidak mendukung preview PDF. Silakan unduh file.
+                    </iframe>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col h-[85vh]">
+                <div class="flex justify-between items-center mb-4 border-b pb-2">
+                    <h2 class="text-xl font-bold text-gray-800">Cover Letter (Draft Email)</h2>
+                    <button onclick="copyText()" id="copyBtn" class="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg font-medium transition flex items-center shadow">
+                        <i class="fas fa-copy mr-2"></i> <span id="btnText">Salin Teks</span>
+                    </button>
+                </div>
+
+                <div class="flex-grow flex flex-col">
+                    <p class="text-sm text-gray-500 mb-2">
+                        *Anda bisa mengedit teks di bawah ini sebelum menyalin.
+                    </p>
+                    <textarea id="coverLetterText" class="w-full h-full p-4 border rounded-lg bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none resize-none font-mono text-sm leading-relaxed text-gray-700 shadow-inner" spellcheck="false">{{ cover_letter }}</textarea>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function copyText() {
+            const copyText = document.getElementById("coverLetterText");
+            
+            // Pilih text
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); // Untuk mobile
+
+            // Salin ke clipboard
+            navigator.clipboard.writeText(copyText.value).then(() => {
+                // Ubah tombol jadi "Tersalin!" sebentar
+                const btnText = document.getElementById("btnText");
+                const originalText = btnText.innerText;
+                const btn = document.getElementById("copyBtn");
+                
+                btnText.innerText = "Tersalin!";
+                btn.classList.remove("bg-gray-800");
+                btn.classList.add("bg-green-600");
+
+                setTimeout(() => {
+                    btnText.innerText = originalText;
+                    btn.classList.remove("bg-green-600");
+                    btn.classList.add("bg-gray-800");
+                }, 2000);
+            }).catch(err => {
+                console.error('Gagal menyalin: ', err);
+                alert("Gagal menyalin teks otomatis. Silakan salin manual.");
+            });
+        }
+    </script>
+</body>
+</html>

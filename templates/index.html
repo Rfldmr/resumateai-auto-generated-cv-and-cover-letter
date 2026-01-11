@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>">
+    <title>ResuMate.ai - AI Powered Resume Builder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-text {
+            background: linear-gradient(to right, #2563eb, #9333ea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        /* Animasi halus untuk tambah field */
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div>
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="ResuMate.ai Logo" class="h-6">
+            </div>
+            <a href="#" class="text-sm font-medium text-slate-500 hover:text-blue-600">Laporkan Kendala</a>
+        </div>
+    </nav>
+
+    <div class="max-w-3xl mx-auto text-center pt-12 pb-8 px-6">
+        <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-slate-900">
+            Buat CV ATS-Friendly dalam <span class="gradient-text">Sekejap</span>
+        </h1>
+        <p class="text-lg text-slate-600">
+            Isi data sekali, AI atur kata-kata dan layout CV ATS kamu otomatis.
+        </p>
+    </div>
+
+    <div class="max-w-4xl mx-auto px-6 pb-20">
+        <form action="/generate" method="POST" id="resumeForm" class="space-y-8">
+            
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex items-center gap-3 mb-6 border-b pb-4">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-slate-800">Data Pribadi</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Nama Lengkap</label>
+                        <input type="text" name="full_name" class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="cth: Rafli Damara" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                        <input type="email" name="email" class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="cth: nama@email.com" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Nomor Telepon</label>
+                        <input type="text" name="phone" class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="cth: 08..." required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Kota Domisili</label>
+                        <input type="text" name="city" class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="cth: Bogor" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Negara</label>
+                        <input type="text" name="country" class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="cth: Indonesia" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex items-center gap-3 mb-6 border-b pb-4">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-slate-800">Pengalaman Kerja</h2>
+                </div>
+
+                <div id="experience-list" class="space-y-6">
+                    <div class="experience-item bg-slate-50 p-6 rounded-xl border border-slate-200 relative group fade-in">
+                        <button type="button" onclick="removeParent(this)" class="absolute top-4 right-6 text-slate-400 hover:text-red-500 transition" title="Hapus">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="text-xs font-semibold text-slate-500 uppercase">Perusahaan</label>
+                                <input type="text" name="exp_company[]" class="w-full mt-1 px-3 py-2 bg-white border border-slate-300 rounded focus:border-blue-500 outline-none" placeholder="cth: PT Gojek Indonesia">
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-slate-500 uppercase">Posisi</label>
+                                <input type="text" name="exp_role[]" class="w-full mt-1 px-3 py-2 bg-white border border-slate-300 rounded focus:border-blue-500 outline-none" placeholder="cth: Data Scientist">
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-slate-500 uppercase">Mulai</label>
+                                <input type="text" name="exp_start[]" class="w-full mt-1 px-3 py-2 bg-white border border-slate-300 rounded focus:border-blue-500 outline-none" placeholder="cth: Jan 2023">
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-slate-500 uppercase">Selesai</label>
+                                <input type="text" name="exp_end[]" class="w-full mt-1 px-3 py-2 bg-white border border-slate-300 rounded focus:border-blue-500 outline-none" placeholder="cth: Des 2023 / Sekarang">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-slate-500 uppercase">Deskripsi Singkat</label>
+                            <textarea name="exp_desc[]" rows="3" class="w-full mt-1 px-3 py-2 bg-white border border-slate-300 rounded focus:border-blue-500 outline-none resize-none" placeholder="cth: Bertanggung jawab atas analisis data nasabah dan..."></textarea>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1">*AI otomatis ubah deskripsi menjadi poin profesional</p>
+                    </div>
+                </div>
+
+                <button type="button" onclick="addExperience()" class="mt-6 flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-800 transition">
+                    <i class="fas fa-plus-circle"></i> Tambah Pengalaman Kerja
+                </button>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex items-center gap-3 mb-6 border-b pb-4">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-slate-800">Pendidikan</h2>
+                </div>
+
+                <div id="education-list" class="space-y-6">
+                    <div class="education-item bg-slate-50 p-6 rounded-xl border border-slate-200 relative fade-in">
+                        <button type="button" onclick="removeParent(this)" class="absolute top-4 right-6 text-slate-400 hover:text-red-500 transition">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="col-span-2">
+                                <label class="text-xs font-semibold text-slate-500 uppercase">Institusi / Universitas</label>
+                                <input type="text" name="edu_school[]" class="w-full mt-1 px-3 py-2 bg-white border border-slate-300 rounded focus:border-blue-500 outline-none" placeholder="cth: IPB University">
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-slate-500 uppercase">Jurusan / Prodi</label>
+                                <input type="text" name="edu_major[]" class="w-full mt-1 px-3 py-2 bg-white border border-slate-300 rounded focus:border-blue-500 outline-none" placeholder="cth: Teknik Informatika">
+                            </div>
+                             <div class="flex gap-2">
+                                <div class="w-1/2">
+                                    <label class="text-xs font-semibold text-slate-500 uppercase">Tahun Masuk</label>
+                                    <input type="text" name="edu_start[]" class="w-full mt-1 px-3 py-2 bg-white border border-slate-300 rounded focus:border-blue-500 outline-none" placeholder="cth: 2020">
+                                </div>
+                                <div class="w-1/2">
+                                    <label class="text-xs font-semibold text-slate-500 uppercase">Tahun Lulus</label>
+                                    <input type="text" name="edu_end[]" class="w-full mt-1 px-3 py-2 bg-white border border-slate-300 rounded focus:border-blue-500 outline-none" placeholder="cth: 2024">
+                                </div>
+                            </div>
+                             <div class="col-span-2">
+                                <label class="text-xs font-semibold text-slate-500 uppercase">Keterangan Tambahan (IPK / Organisasi)</label>
+                                <input type="text" name="edu_desc[]" class="w-full mt-1 px-3 py-2 bg-white border border-slate-300 rounded focus:border-blue-500 outline-none" placeholder="cth: IPK 3.85, Ketua BEM">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                 <button type="button" onclick="addEducation()" class="mt-6 flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-800 transition">
+                    <i class="fas fa-plus-circle"></i> Tambah Pendidikan
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 h-full">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-slate-800">Keterampilan</h2>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Soft Skills</label>
+                            <textarea name="soft_skills" rows="3" class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none" placeholder="cth: Komunikasi, Kepemimpinan, Manajemen Waktu..."></textarea>
+                            <p class="text-xs text-slate-400 mt-1">*Pisahkan dengan koma</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Hard Skills</label>
+                            <textarea name="hard_skills" rows="3" class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none" placeholder="cth: Python, SQL, Tableau, Microsoft Excel..."></textarea>
+                            <p class="text-xs text-slate-400 mt-1">*Pisahkan dengan koma</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 h-full">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-slate-800">Penghargaan</h2>
+                    </div>
+                    <div id="award-list" class="space-y-4">
+                         <div class="award-item relative fade-in">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Nama Penghargaan</label>
+                            <input type="text" name="award_name[]" class="w-full px-4 py-2 rounded-lg border border-slate-300 mb-2" placeholder="cth: Juara 1 Lomba Coding">
+                            <div class="flex gap-2">
+                                <input type="text" name="award_year[]" class="w-1/3 px-4 py-2 rounded-lg border border-slate-300" placeholder="Tahun">
+                                <input type="text" name="award_desc[]" class="w-2/3 px-4 py-2 rounded-lg border border-slate-300" placeholder="Deskripsi singkat">
+                            </div>
+                         </div>
+                     </div>
+                      <button type="button" onclick="addAward()" class="mt-4 flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-800 transition">
+                        <i class="fas fa-plus-circle"></i> Tambah Penghargaan
+                    </button>
+                </div>
+            </div>
+
+            <div class="pt-6">
+                <button type="submit" id="submitBtn" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-lg font-bold py-4 rounded-xl shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-indigo-700 transition transform hover:-translate-y-1 flex justify-center items-center gap-3">
+                    <i class="fas fa-magic"></i>
+                    <span>Generate CV & Cover Letter</span>
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+    <script>
+        // Fungsi Generic untuk Menambah Elemen
+        function cloneItem(containerId, className) {
+            const container = document.getElementById(containerId);
+            const items = container.getElementsByClassName(className);
+            
+            if(items.length > 0) {
+                const newItem = items[0].cloneNode(true);
+                // Reset value input
+                const inputs = newItem.querySelectorAll('input, textarea');
+                inputs.forEach(input => input.value = '');
+                
+                // Tambahkan ke container
+                container.appendChild(newItem);
+            }
+        }
+
+        function addExperience() {
+            cloneItem('experience-list', 'experience-item');
+        }
+
+        function addEducation() {
+            cloneItem('education-list', 'education-item');
+        }
+        
+        function addAward() {
+            cloneItem('award-list', 'award-item');
+        }
+
+        // Fungsi Hapus Elemen
+        function removeParent(button) {
+            const item = button.closest('.fade-in');
+            // Cek jumlah item, jangan hapus jika sisa 1
+            const parent = item.parentElement;
+            if (parent.children.length > 1) {
+                item.remove();
+            } else {
+                alert("Minimal harus ada satu data.");
+            }
+        }
+
+        // Loading State pada Tombol Submit
+        document.getElementById('resumeForm').addEventListener('submit', function() {
+            const btn = document.getElementById('submitBtn');
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> <span>Sedang memproses AI...</span>';
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+        });
+    </script>
+</body>
+</html>
